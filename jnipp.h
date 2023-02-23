@@ -345,7 +345,7 @@ namespace jni
             Note that the return type should be explicitly stated in the function
             call. The type signature of the method is calculated by the types of
             the supplied arguments.
-            \param name The name of the method to call (and optional signature).
+            \param name The name of the method to call (with optional signature).
             \param args Arguments to supply to the method.
             \return The method's return value.
          */
@@ -654,11 +654,14 @@ namespace jni
             Calls a static method on this Class with the given name, and no arguments.
             Note that the return type should be explicitly stated in the function
             call.
-            \param name The name of the method to call.
+            \param name The name of the method to call (with optional signature).
             \return The method's return value.
          */
         template <class TReturn>
         TReturn call(const char* name) const {
+            if (std::strstr(name, "()"))
+                return call<TReturn>(getStaticMethod(name));
+
             method_t method = getStaticMethod(name, ("()" + internal::valueSig((TReturn*) nullptr)).c_str());
             return call<TReturn>(method);
         }
@@ -682,7 +685,7 @@ namespace jni
             Note that the return type should be explicitly stated in the function
             call. The type signature of the method is calculated by the types of
             the supplied arguments.
-            \param name The name of the method to call.
+            \param name The name of the method to call (with optional signature).
             \param args Arguments to supply to the method.
             \return The method's return value.
          */
