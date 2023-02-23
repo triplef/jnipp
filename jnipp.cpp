@@ -470,6 +470,13 @@ namespace jni
         return toWString(result);
     }
 
+    jni::String Object::callMethod(method_t method, internal::value_t* args, internal::ReturnTypeWrapper<jni::String> const&) const
+    {
+        auto result = env()->CallObjectMethodA(_handle, method, (jvalue*) args);
+        handleJavaExceptions();
+        return String(jstring(result), DeleteLocalInput);
+    }
+
     jni::Object Object::callMethod(method_t method, internal::value_t* args, internal::ReturnTypeWrapper<jni::Object> const&) const
     {
         auto result = env()->CallObjectMethodA(_handle, method, (jvalue*) args);
@@ -520,6 +527,11 @@ namespace jni
     std::wstring Object::getFieldValue(field_t field, internal::ReturnTypeWrapper<std::wstring> const&) const
     {
         return toWString(env()->GetObjectField(_handle, field));
+    }
+
+    String Object::getFieldValue(field_t field, internal::ReturnTypeWrapper<String> const&) const
+    {
+        return String(jstring(env()->GetObjectField(_handle, field)), DeleteLocalInput);
     }
 
     Object Object::getFieldValue(field_t field, internal::ReturnTypeWrapper<Object> const&) const
@@ -814,6 +826,11 @@ namespace jni
     template <> Object Class::get(field_t field) const
     {
         return Object(env()->GetStaticObjectField(getHandle(), field), DeleteLocalInput);
+    }
+
+    template <> String Class::get(field_t field) const
+    {
+        return String(jstring(env()->GetStaticObjectField(getHandle(), field)), DeleteLocalInput);
     }
 
     template <> void Class::set(field_t field, const bool& value)

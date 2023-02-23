@@ -16,6 +16,7 @@ struct _jfieldID;
 class  _jobject;
 class  _jclass;
 class  _jarray;
+class  _jstring;
 
 namespace jni
 {
@@ -31,6 +32,7 @@ namespace jni
     typedef _jobject* jobject;
     typedef _jclass* jclass;
     typedef _jarray* jarray;
+    typedef _jstring* jstring;
 
     /**
         You can save a method via its handle using Class::getMethod() if it is
@@ -73,6 +75,7 @@ namespace jni
 
     // Foward Declarations
     class Object;
+    class String;
 
     /**
         This namespace is for messy implementation details only. It is not a part
@@ -100,6 +103,8 @@ namespace jni
         inline std::string valueSig(const std::wstring*) { return "Ljava/lang/String;"; }
         inline std::string valueSig(const char* const*) { return "Ljava/lang/String;"; }
         inline std::string valueSig(const wchar_t* const*) { return "Ljava/lang/String;"; }
+        inline std::string valueSig(const String*) { return "Ljava/lang/String;"; }
+        inline std::string valueSig(const String* const*) { return "Ljava/lang/String;"; }
         std::string valueSig(const Object* obj);
         inline std::string valueSig(const Object* const* obj) { return valueSig(obj ? *obj : nullptr); }
 
@@ -451,8 +456,8 @@ namespace jni
         double callMethod(method_t method, internal::value_t* args, internal::ReturnTypeWrapper<double> const&) const;
         std::string callMethod(method_t method, internal::value_t* args, internal::ReturnTypeWrapper<std::string> const&) const;
         std::wstring callMethod(method_t method, internal::value_t* args, internal::ReturnTypeWrapper<std::wstring> const&) const;
+        jni::String callMethod(method_t method, internal::value_t* args, internal::ReturnTypeWrapper<jni::String> const&) const;
         jni::Object callMethod(method_t method, internal::value_t* args, internal::ReturnTypeWrapper<jni::Object> const&) const;
-
 
         void getFieldValue(field_t field, internal::ReturnTypeWrapper<void> const&) const;
         bool getFieldValue(field_t field, internal::ReturnTypeWrapper<bool> const&) const;
@@ -465,6 +470,7 @@ namespace jni
         double getFieldValue(field_t field, internal::ReturnTypeWrapper<double> const&) const;
         std::string getFieldValue(field_t field, internal::ReturnTypeWrapper<std::string> const&) const;
         std::wstring getFieldValue(field_t field, internal::ReturnTypeWrapper<std::wstring> const&) const;
+        jni::String getFieldValue(field_t field, internal::ReturnTypeWrapper<jni::String> const&) const;
         jni::Object getFieldValue(field_t field, internal::ReturnTypeWrapper<jni::Object> const&) const;
 
         // Instance Variables
@@ -962,6 +968,19 @@ namespace jni
     private:
         // Instance Variables
         mutable long _length;   ///< Mutable as it may only finally get set in a getLength() call.
+    };
+
+    /**
+        Java string wrapper.
+    */
+    class String : public Object
+    {
+    public:
+        String() noexcept : Object() {};
+
+        String(jstring ref, int scopeFlags = Temporary) : Object((jobject) ref, scopeFlags) {};
+
+        jstring getHandle() const noexcept { return jstring(Object::getHandle()); }
     };
 
     /**
