@@ -20,6 +20,12 @@
 // Local Dependencies
 #include "jnipp.h"
 
+#if __has_include(<QAndroidJniEnvironment>)
+#include <QAndroidJniEnvironment>
+#elif __has_include(<QJniEnvironment>)
+#include <QJniEnvironment>
+#endif
+
 namespace jni
 {
     // Static Variables
@@ -177,7 +183,13 @@ namespace jni
 
     static jclass findClass(const char* name)
     {
+#if __has_include(<QAndroidJniEnvironment>)
+        jclass ref = QAndroidJniEnvironment().findClass(name); // use Qt 5 class loader
+#elif __has_include(<QJniEnvironment>)
+        jclass ref = QJniEnvironment().findClass(name); // use Qt 6 class loader
+#else
         jclass ref = env()->FindClass(name);
+#endif
 
         if (ref == nullptr)
         {
@@ -645,7 +657,14 @@ namespace jni
         Class Implementation
      */
 
-    Class::Class(const char* name) : Object(findClass(name), DeleteLocalInput)
+    Class::Class(const char* name) :
+        Object(findClass(name),
+#if __has_include(<QAndroidJniEnvironment>) || __has_include(<QJniEnvironment>)
+               0 // Qt returns a global reference
+#else
+               DeleteLocalInput
+#endif
+               )
     {
     }
 
